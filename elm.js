@@ -8619,31 +8619,31 @@ var _elm_lang$html$Html_Attributes$classList = function (list) {
 };
 var _elm_lang$html$Html_Attributes$style = _elm_lang$virtual_dom$VirtualDom$style;
 
-var _user$project$Main$fix = F2(
+var _user$project$PrayTime$fix = F2(
 	function (a, b) {
 		var aVar = a - (b * _elm_lang$core$Basics$toFloat(
 			_elm_lang$core$Basics$floor(a / b)));
 		return (_elm_lang$core$Native_Utils.cmp(aVar, 0) < 0) ? (aVar + b) : aVar;
 	});
-var _user$project$Main$fixAngle = function (a) {
-	return A2(_user$project$Main$fix, a, 360.0);
+var _user$project$PrayTime$fixAngle = function (a) {
+	return A2(_user$project$PrayTime$fix, a, 360.0);
 };
-var _user$project$Main$fixHour = function (a) {
-	return A2(_user$project$Main$fix, a, 24.0);
+var _user$project$PrayTime$fixHour = function (a) {
+	return A2(_user$project$PrayTime$fix, a, 24.0);
 };
-var _user$project$Main$sunPosition = function (julianDate) {
+var _user$project$PrayTime$sunPosition = function (julianDate) {
 	var numberOfDays = julianDate - 2451545.0;
-	var meanAnomaly = _user$project$Main$fixAngle(357.529 + (0.98560028 * numberOfDays));
+	var meanAnomaly = _user$project$PrayTime$fixAngle(357.529 + (0.98560028 * numberOfDays));
 	var distanceOfSun = (1.00014 - (1.671e-2 * _elm_lang$core$Basics$cos(
 		_elm_lang$core$Basics$degrees(meanAnomaly)))) - (1.4e-4 * _elm_lang$core$Basics$cos(
 		_elm_lang$core$Basics$degrees(2 * meanAnomaly)));
-	var meanLongitude = _user$project$Main$fixAngle(280.459 + (0.98564736 * numberOfDays));
+	var meanLongitude = _user$project$PrayTime$fixAngle(280.459 + (0.98564736 * numberOfDays));
 	var eclipticLongitude = function () {
 		var y = 2.0e-2 * _elm_lang$core$Basics$sin(
 			_elm_lang$core$Basics$degrees(2 * meanAnomaly));
 		var x = 1.915 * _elm_lang$core$Basics$sin(
 			_elm_lang$core$Basics$degrees(meanAnomaly));
-		return _user$project$Main$fixAngle((meanLongitude + x) + y);
+		return _user$project$PrayTime$fixAngle((meanLongitude + x) + y);
 	}();
 	var obliquityOfTheElliptic = 23.439 - (3.6e-7 * numberOfDays);
 	var angularCorrection = function () {
@@ -8655,18 +8655,18 @@ var _user$project$Main$sunPosition = function (julianDate) {
 		var arctan2 = (A2(_elm_lang$core$Basics$atan2, y, x) * 180.0) / _elm_lang$core$Basics$pi;
 		return arctan2 / 15.0;
 	}();
-	var equation = (meanLongitude / 15.0) - _user$project$Main$fixHour(angularCorrection);
+	var equation = (meanLongitude / 15.0) - _user$project$PrayTime$fixHour(angularCorrection);
 	var declination = (_elm_lang$core$Basics$asin(
 		_elm_lang$core$Basics$sin(
 			_elm_lang$core$Basics$degrees(obliquityOfTheElliptic)) * _elm_lang$core$Basics$sin(
 			_elm_lang$core$Basics$degrees(eclipticLongitude))) * 180) / _elm_lang$core$Basics$pi;
 	return {declination: declination, equation: equation};
 };
-var _user$project$Main$julianDateByCoordinate = F2(
+var _user$project$PrayTime$julianDateByCoordinate = F2(
 	function (longitude, julianDate) {
 		return julianDate - (longitude / (15 * 24));
 	});
-var _user$project$Main$monthToInt = function (month) {
+var _user$project$PrayTime$monthToInt = function (month) {
 	var _p0 = month;
 	switch (_p0.ctor) {
 		case 'Jan':
@@ -8695,9 +8695,9 @@ var _user$project$Main$monthToInt = function (month) {
 			return 12;
 	}
 };
-var _user$project$Main$toJulianDate = function (date) {
+var _user$project$PrayTime$toJulianDate = function (date) {
 	var day = _elm_lang$core$Date$day(date);
-	var month = _user$project$Main$monthToInt(
+	var month = _user$project$PrayTime$monthToInt(
 		_elm_lang$core$Date$month(date));
 	var julianMonth = (_elm_lang$core$Native_Utils.cmp(month, 2) < 1) ? (month + 12) : month;
 	var year = _elm_lang$core$Date$year(date);
@@ -8711,24 +8711,24 @@ var _user$project$Main$toJulianDate = function (date) {
 			365.25 * _elm_lang$core$Basics$toFloat(julianYear + 4716)) + _elm_lang$core$Basics$floor(
 			30.6001 * _elm_lang$core$Basics$toFloat(julianMonth + 1))) + _elm_lang$core$Basics$toFloat(day)) + _elm_lang$core$Basics$toFloat(bVar)) - 1524.5;
 };
-var _user$project$Main$riseSetAngle = function (elevation) {
+var _user$project$PrayTime$riseSetAngle = function (elevation) {
 	var angle = 3.47e-2 * _elm_lang$core$Basics$sqrt(elevation);
 	return 0.833 + angle;
 };
-var _user$project$Main$midDayTime = F2(
+var _user$project$PrayTime$midDayTime = F2(
 	function (julianDate, time) {
-		var sunPositionDhuhr = _user$project$Main$sunPosition(julianDate + time);
+		var sunPositionDhuhr = _user$project$PrayTime$sunPosition(julianDate + time);
 		var equationOfTime = sunPositionDhuhr.equation;
-		return _user$project$Main$fixHour(12 - equationOfTime);
+		return _user$project$PrayTime$fixHour(12 - equationOfTime);
 	});
-var _user$project$Main$sunAngleTime = F5(
+var _user$project$PrayTime$sunAngleTime = F5(
 	function (latitude, angle, julianDate, time, direction) {
 		var degreeCosL = _elm_lang$core$Basics$cos((latitude * _elm_lang$core$Basics$pi) / 180);
 		var degreeSinL = _elm_lang$core$Basics$sin((latitude * _elm_lang$core$Basics$pi) / 180);
 		var angleVar = angle;
 		var degreeA = -1 * _elm_lang$core$Basics$sin((angleVar * _elm_lang$core$Basics$pi) / 180);
-		var noon = A2(_user$project$Main$midDayTime, julianDate, time);
-		var sunPositionAtTime = _user$project$Main$sunPosition(julianDate + time);
+		var noon = A2(_user$project$PrayTime$midDayTime, julianDate, time);
+		var sunPositionAtTime = _user$project$PrayTime$sunPosition(julianDate + time);
 		var declination = sunPositionAtTime.declination;
 		var degreeSinD = _elm_lang$core$Basics$sin((declination * _elm_lang$core$Basics$pi) / 180);
 		var degreeCosD = _elm_lang$core$Basics$cos((declination * _elm_lang$core$Basics$pi) / 180);
@@ -8741,7 +8741,7 @@ var _user$project$Main$sunAngleTime = F5(
 			return noon + tVar;
 		}
 	});
-var _user$project$Main$adjustTimes = F3(
+var _user$project$PrayTime$adjustTimes = F3(
 	function (longitude, timeZone, _p2) {
 		var _p3 = _p2;
 		var isyaTime = ((_p3.isya + timeZone) - (longitude / 15)) + (2 / 60);
@@ -8752,199 +8752,37 @@ var _user$project$Main$adjustTimes = F3(
 		var fajrTime = ((_p3.fajr + timeZone) - (longitude / 15)) + (2 / 60);
 		return {fajr: fajrTime, sunRise: sunRiseTime, dhuhr: dhuhrTime, asr: asrTime, magrib: magribTime, isya: isyaTime};
 	});
-var _user$project$Main$twoDigitsFormat = function (number) {
+var _user$project$PrayTime$twoDigitsFormat = function (number) {
 	return (_elm_lang$core$Native_Utils.cmp(number, 10) < 0) ? A2(
 		_elm_lang$core$Basics_ops['++'],
 		'0',
 		_elm_lang$core$Basics$toString(number)) : _elm_lang$core$Basics$toString(number);
 };
-var _user$project$Main$formatTime = function (time) {
-	var roundedTime = _user$project$Main$fixHour(time + (0.5 / 60));
+var _user$project$PrayTime$formatTime = function (time) {
+	var roundedTime = _user$project$PrayTime$fixHour(time + (0.5 / 60));
 	var hours = _elm_lang$core$Basics$floor(roundedTime);
 	var minutes = _elm_lang$core$Basics$floor(
 		(roundedTime - _elm_lang$core$Basics$toFloat(hours)) * 60);
 	return A2(
 		_elm_lang$core$Basics_ops['++'],
-		_user$project$Main$twoDigitsFormat(hours),
+		_user$project$PrayTime$twoDigitsFormat(hours),
 		A2(
 			_elm_lang$core$Basics_ops['++'],
 			':',
-			_user$project$Main$twoDigitsFormat(minutes)));
+			_user$project$PrayTime$twoDigitsFormat(minutes)));
 };
-var _user$project$Main$formatTimes = function (prayTimes) {
+var _user$project$PrayTime$formatTimes = function (prayTimes) {
 	return {
-		fajr: _user$project$Main$formatTime(prayTimes.fajr),
-		sunRise: _user$project$Main$formatTime(prayTimes.sunRise),
-		dhuhr: _user$project$Main$formatTime(prayTimes.dhuhr),
-		asr: _user$project$Main$formatTime(prayTimes.asr),
-		magrib: _user$project$Main$formatTime(prayTimes.magrib),
-		isya: _user$project$Main$formatTime(prayTimes.isya)
+		fajr: _user$project$PrayTime$formatTime(prayTimes.fajr),
+		sunRise: _user$project$PrayTime$formatTime(prayTimes.sunRise),
+		dhuhr: _user$project$PrayTime$formatTime(prayTimes.dhuhr),
+		asr: _user$project$PrayTime$formatTime(prayTimes.asr),
+		magrib: _user$project$PrayTime$formatTime(prayTimes.magrib),
+		isya: _user$project$PrayTime$formatTime(prayTimes.isya)
 	};
 };
-var _user$project$Main$update = F2(
-	function (msg, model) {
-		var _p4 = msg;
-		return {ctor: '_Tuple2', _0: _p4._0, _1: _elm_lang$core$Platform_Cmd$none};
-	});
-var _user$project$Main$init = {ctor: '_Tuple2', _0: 0, _1: _elm_lang$core$Platform_Cmd$none};
-var _user$project$Main$PrayTimes = F6(
-	function (a, b, c, d, e, f) {
-		return {fajr: a, sunRise: b, dhuhr: c, asr: d, magrib: e, isya: f};
-	});
-var _user$project$Main$FormattedPrayTimes = F6(
-	function (a, b, c, d, e, f) {
-		return {fajr: a, sunRise: b, dhuhr: c, asr: d, magrib: e, isya: f};
-	});
-var _user$project$Main$SunPosition = F2(
-	function (a, b) {
-		return {declination: a, equation: b};
-	});
-var _user$project$Main$Tick = function (a) {
-	return {ctor: 'Tick', _0: a};
-};
-var _user$project$Main$subscriptions = function (model) {
-	return A2(_elm_lang$core$Time$every, _elm_lang$core$Time$second, _user$project$Main$Tick);
-};
-var _user$project$Main$None = {ctor: 'None'};
-var _user$project$Main$calcAsrTime = F4(
-	function (latitude, factor, julianDate, time) {
-		var sunPositionAtTime = _user$project$Main$sunPosition(julianDate + time);
-		var declination = sunPositionAtTime.declination;
-		var absLatDec = _elm_lang$core$Basics$abs(latitude - declination);
-		var degreeTan = _elm_lang$core$Basics$tan((absLatDec * _elm_lang$core$Basics$pi) / 180);
-		var angle = -1 * ((_elm_lang$core$Basics$atan(1 / (factor + degreeTan)) * 180) / _elm_lang$core$Basics$pi);
-		return A5(_user$project$Main$sunAngleTime, latitude, angle, julianDate, time, _user$project$Main$None);
-	});
-var _user$project$Main$CW = {ctor: 'CW'};
-var _user$project$Main$CCW = {ctor: 'CCW'};
-var _user$project$Main$calculatePrayTimes = F5(
-	function (latitude, longitude, elevation, timeZone, date) {
-		var julianDate = A2(
-			_user$project$Main$julianDateByCoordinate,
-			longitude,
-			_user$project$Main$toJulianDate(date));
-		var fajrTime = A5(_user$project$Main$sunAngleTime, latitude, 20, julianDate, 0.20833333333333334, _user$project$Main$CCW);
-		var sunRiseTime = A5(
-			_user$project$Main$sunAngleTime,
-			latitude,
-			_user$project$Main$riseSetAngle(elevation),
-			julianDate,
-			0.25,
-			_user$project$Main$CCW);
-		var dhuhrTime = A2(_user$project$Main$midDayTime, julianDate, 0.5);
-		var asrTime = A4(_user$project$Main$calcAsrTime, latitude, 1, julianDate, 0.5416666666666666);
-		var magribTime = A5(_user$project$Main$sunAngleTime, latitude, 1, julianDate, 0.75, _user$project$Main$None);
-		var isyaTime = A5(_user$project$Main$sunAngleTime, latitude, 18, julianDate, 0.75, _user$project$Main$None);
-		return {fajr: fajrTime, sunRise: sunRiseTime, dhuhr: dhuhrTime, asr: asrTime, magrib: magribTime, isya: isyaTime};
-	});
-var _user$project$Main$view = function (model) {
-	var htmlClock = function (clock) {
-		return A2(
-			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$classList(
-					{
-						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: 'time__clock', _1: true},
-						_1: {ctor: '[]'}
-					}),
-				_1: {ctor: '[]'}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$h1,
-					{ctor: '[]'},
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html$text(clock),
-						_1: {ctor: '[]'}
-					}),
-				_1: {ctor: '[]'}
-			});
-	};
-	var htmlTimeStructure = function (_p5) {
-		var _p6 = _p5;
-		return A2(
-			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$classList(
-					{
-						ctor: '::',
-						_0: {ctor: '_Tuple2', _0: 'time__shalat', _1: true},
-						_1: {ctor: '[]'}
-					}),
-				_1: {ctor: '[]'}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$classList(
-							{
-								ctor: '::',
-								_0: {ctor: '_Tuple2', _0: 'time__label', _1: true},
-								_1: {ctor: '[]'}
-							}),
-						_1: {ctor: '[]'}
-					},
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html$text(_p6._0),
-						_1: {ctor: '[]'}
-					}),
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$div,
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$classList(
-								{
-									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'time__shalat-time', _1: true},
-									_1: {ctor: '[]'}
-								}),
-							_1: {ctor: '[]'}
-						},
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html$text(_p6._1),
-							_1: {ctor: '[]'}
-						}),
-					_1: {ctor: '[]'}
-				}
-			});
-	};
-	var timeZone = _elm_lang$core$Basics$toFloat(7);
-	var elevation = 0;
-	var longitude = 106.8294444;
-	var latitude = -6.1744444;
-	var date = _elm_lang$core$Date$fromTime(model);
-	var hour = _elm_lang$core$Date$hour(date);
-	var minute = _elm_lang$core$Date$minute(date);
-	var second = _elm_lang$core$Date$second(date);
-	var fullClock = A2(
-		_elm_lang$core$Basics_ops['++'],
-		_user$project$Main$twoDigitsFormat(hour),
-		A2(
-			_elm_lang$core$Basics_ops['++'],
-			':',
-			A2(
-				_elm_lang$core$Basics_ops['++'],
-				_user$project$Main$twoDigitsFormat(minute),
-				A2(
-					_elm_lang$core$Basics_ops['++'],
-					':',
-					_user$project$Main$twoDigitsFormat(second)))));
-	var prayTimes = A5(_user$project$Main$calculatePrayTimes, latitude, longitude, elevation, timeZone, date);
-	var adjustedTime = A3(_user$project$Main$adjustTimes, longitude, timeZone, prayTimes);
-	var formattedTimes = _user$project$Main$formatTimes(adjustedTime);
-	var htmlTimeList = {
+var _user$project$PrayTime$toTimeList = function (formattedTimes) {
+	return {
 		ctor: '::',
 		_0: {ctor: '_Tuple2', _0: 'Subuh', _1: formattedTimes.fajr},
 		_1: {
@@ -8969,14 +8807,178 @@ var _user$project$Main$view = function (model) {
 			}
 		}
 	};
+};
+var _user$project$PrayTime$PrayTimes = F6(
+	function (a, b, c, d, e, f) {
+		return {fajr: a, sunRise: b, dhuhr: c, asr: d, magrib: e, isya: f};
+	});
+var _user$project$PrayTime$FormattedPrayTimes = F6(
+	function (a, b, c, d, e, f) {
+		return {fajr: a, sunRise: b, dhuhr: c, asr: d, magrib: e, isya: f};
+	});
+var _user$project$PrayTime$SunPosition = F2(
+	function (a, b) {
+		return {declination: a, equation: b};
+	});
+var _user$project$PrayTime$None = {ctor: 'None'};
+var _user$project$PrayTime$calcAsrTime = F4(
+	function (latitude, factor, julianDate, time) {
+		var sunPositionAtTime = _user$project$PrayTime$sunPosition(julianDate + time);
+		var declination = sunPositionAtTime.declination;
+		var absLatDec = _elm_lang$core$Basics$abs(latitude - declination);
+		var degreeTan = _elm_lang$core$Basics$tan((absLatDec * _elm_lang$core$Basics$pi) / 180);
+		var angle = -1 * ((_elm_lang$core$Basics$atan(1 / (factor + degreeTan)) * 180) / _elm_lang$core$Basics$pi);
+		return A5(_user$project$PrayTime$sunAngleTime, latitude, angle, julianDate, time, _user$project$PrayTime$None);
+	});
+var _user$project$PrayTime$CW = {ctor: 'CW'};
+var _user$project$PrayTime$CCW = {ctor: 'CCW'};
+var _user$project$PrayTime$calculatePrayTimes = F5(
+	function (latitude, longitude, elevation, timeZone, date) {
+		var julianDate = A2(
+			_user$project$PrayTime$julianDateByCoordinate,
+			longitude,
+			_user$project$PrayTime$toJulianDate(date));
+		var fajrTime = A5(_user$project$PrayTime$sunAngleTime, latitude, 20, julianDate, 0.20833333333333334, _user$project$PrayTime$CCW);
+		var sunRiseTime = A5(
+			_user$project$PrayTime$sunAngleTime,
+			latitude,
+			_user$project$PrayTime$riseSetAngle(elevation),
+			julianDate,
+			0.25,
+			_user$project$PrayTime$CCW);
+		var dhuhrTime = A2(_user$project$PrayTime$midDayTime, julianDate, 0.5);
+		var asrTime = A4(_user$project$PrayTime$calcAsrTime, latitude, 1, julianDate, 0.5416666666666666);
+		var magribTime = A5(_user$project$PrayTime$sunAngleTime, latitude, 1, julianDate, 0.75, _user$project$PrayTime$None);
+		var isyaTime = A5(_user$project$PrayTime$sunAngleTime, latitude, 18, julianDate, 0.75, _user$project$PrayTime$None);
+		return {fajr: fajrTime, sunRise: sunRiseTime, dhuhr: dhuhrTime, asr: asrTime, magrib: magribTime, isya: isyaTime};
+	});
+
+var _user$project$Main$htmlTimeStructure = function (_p0) {
+	var _p1 = _p0;
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$classList(
+				{
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: 'time__shalat', _1: true},
+					_1: {ctor: '[]'}
+				}),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$classList(
+						{
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 'time__label', _1: true},
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(_p1._0),
+					_1: {ctor: '[]'}
+				}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$classList(
+							{
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: 'time__shalat-time', _1: true},
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(_p1._1),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			}
+		});
+};
+var _user$project$Main$toHtmlClock = function (clock) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$classList(
+				{
+					ctor: '::',
+					_0: {ctor: '_Tuple2', _0: 'time__clock', _1: true},
+					_1: {ctor: '[]'}
+				}),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$h1,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(clock),
+					_1: {ctor: '[]'}
+				}),
+			_1: {ctor: '[]'}
+		});
+};
+var _user$project$Main$formattedDate = function (date) {
+	var second = _elm_lang$core$Date$second(date);
+	var minute = _elm_lang$core$Date$minute(date);
+	var hour = _elm_lang$core$Date$hour(date);
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_user$project$PrayTime$twoDigitsFormat(hour),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			':',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_user$project$PrayTime$twoDigitsFormat(minute),
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					':',
+					_user$project$PrayTime$twoDigitsFormat(second)))));
+};
+var _user$project$Main$view = function (model) {
+	var timeZone = _elm_lang$core$Basics$toFloat(7);
+	var elevation = 0;
+	var longitude = 106.8294444;
+	var latitude = -6.1744444;
+	var date = _elm_lang$core$Date$fromTime(model);
+	var htmlTimes = A2(
+		_elm_lang$core$List$map,
+		_user$project$Main$htmlTimeStructure,
+		_user$project$PrayTime$toTimeList(
+			_user$project$PrayTime$formatTimes(
+				A3(
+					_user$project$PrayTime$adjustTimes,
+					longitude,
+					timeZone,
+					A5(_user$project$PrayTime$calculatePrayTimes, latitude, longitude, elevation, timeZone, date)))));
+	var htmlClock = _user$project$Main$toHtmlClock(
+		_user$project$Main$formattedDate(date));
 	var htmlTimeKeeper = A2(
 		_elm_lang$core$Basics_ops['++'],
 		{
 			ctor: '::',
-			_0: htmlClock(fullClock),
+			_0: htmlClock,
 			_1: {ctor: '[]'}
 		},
-		A2(_elm_lang$core$List$map, htmlTimeStructure, htmlTimeList));
+		htmlTimes);
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -8990,6 +8992,18 @@ var _user$project$Main$view = function (model) {
 			_1: {ctor: '[]'}
 		},
 		htmlTimeKeeper);
+};
+var _user$project$Main$update = F2(
+	function (msg, model) {
+		var _p2 = msg;
+		return {ctor: '_Tuple2', _0: _p2._0, _1: _elm_lang$core$Platform_Cmd$none};
+	});
+var _user$project$Main$init = {ctor: '_Tuple2', _0: 0, _1: _elm_lang$core$Platform_Cmd$none};
+var _user$project$Main$Tick = function (a) {
+	return {ctor: 'Tick', _0: a};
+};
+var _user$project$Main$subscriptions = function (model) {
+	return A2(_elm_lang$core$Time$every, _elm_lang$core$Time$second, _user$project$Main$Tick);
 };
 var _user$project$Main$main = _elm_lang$html$Html$program(
 	{init: _user$project$Main$init, view: _user$project$Main$view, update: _user$project$Main$update, subscriptions: _user$project$Main$subscriptions})();
