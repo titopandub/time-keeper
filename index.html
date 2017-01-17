@@ -13,6 +13,10 @@
   text-align: center;
 }
 
+.time__clock {
+  font-size: 1.5em;
+}
+
 .time__shalat {
   font-size: 1.3em;
 }
@@ -28,21 +32,50 @@
   width: 45%;
   text-align: left;
 }
+
+@media (min-width: 1000px) {
+  .time {
+    width: 90%;
+    margin: 30px auto;
+    text-align: center;
+  }
+
+  .time__clock {
+    font-size: 4.5em;
+  }
+
+  .time__shalat {
+    float: left;
+    font-size: 3.5em;
+    width: 33%;
+    height: 30%;
+    margin: 20px 0;
+  }
+
+  .time__label {
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
+
+  .time__shalat-time {
+    display: block;
+    width: 100%;
+    text-align: center;
+  }
+}
+
   </style>
   <script type="text/javascript" src="elm.js"></script>
 </head>
 
 <body>
+  <div id="status"></div>
   <script type="text/javascript"></script>
   <script type="text/javascript">
-// Helper function which returns a promise which resolves once the service worker registration
-// is past the "installing" state.
 function waitUntilInstalled(registration) {
   return new Promise(function(resolve, reject) {
     if (registration.installing) {
-      // If the current registration represents the "installing" service worker, then wait
-      // until the installation step (during which the resources are pre-fetched) completes
-      // to display the file list.
       registration.installing.addEventListener('statechange', function(e) {
         if (e.target.state == 'installed') {
           resolve();
@@ -51,9 +84,6 @@ function waitUntilInstalled(registration) {
         }
       });
     } else {
-      // Otherwise, if this isn't the "installing" service worker, then installation must have been
-      // completed during a previous visit to this page, and the resources are already pre-fetched.
-      // So we can show the list of files right away.
       resolve();
     }
   });
@@ -63,12 +93,9 @@ if ('serviceWorker' in navigator) {
     .then(waitUntilInstalled)
     .then(Elm.Main.fullscreen())
     .catch(function(error) {
-      // Something went wrong during registration. The service-worker.js file
-      // might be unavailable or contain a syntax error.
       document.querySelector('#status').textContent = error;
     });
 } else {
-  // The current browser doesn't support service workers.
   var aElement = document.createElement('a');
   aElement.href = 'http://www.chromium.org/blink/serviceworker/service-worker-faq';
   aElement.textContent = 'Service workers are not supported in the current browser.';

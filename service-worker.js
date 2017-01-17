@@ -11,24 +11,8 @@
  limitations under the License.
 */
 
-// This polyfill provides Cache.add(), Cache.addAll(), and CacheStorage.match(),
-// which are not implemented in Chrome 40.
 importScripts('./serviceworker-cache-polyfill.js');
-
-// While overkill for this specific sample in which there is only one cache,
-// this is one best practice that can be followed in general to keep track of
-// multiple caches used by a given service worker, and keep them all versioned.
-// It maps a shorthand identifier for a cache to a specific, versioned cache name.
-
-// Note that since global state is discarded in between service worker restarts, these
-// variables will be reinitialized each time the service worker handles an event, and you
-// should not attempt to change their values inside an event handler. (Treat them as constants.)
-
-// If at any point you want to force pages that use this service worker to start using a fresh
-// cache, then increment the CACHE_VERSION value. It will kick off the service worker update
-// flow and the old cache(s) will be purged as part of the activate event handler when the
-// updated service worker is activated.
-var CACHE_VERSION = 2;
+var CACHE_VERSION = 3;
 var CURRENT_CACHES = {
   prefetch: 'prefetch-cache-v' + CACHE_VERSION
 };
