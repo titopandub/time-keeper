@@ -4,6 +4,8 @@ import Html exposing (Html)
 import Html.Attributes exposing (classList)
 import Time exposing (Time, second)
 import Date exposing (Date)
+import Task exposing (Task)
+import Geolocation exposing (Location)
 import Debug exposing (log)
 import PrayTime exposing (..)
 
@@ -16,25 +18,42 @@ main =
         , subscriptions = subscriptions
         }
 
+type alias LatLong =
+    { latitude: Float
+    , longitude: Float
+    }
 
 type alias Model =
-    Time
+    ( { time: Time
+      , location: LatLong
+      }
+    )
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( 0, Cmd.none )
+    ( { time = 0
+      , location = { latitude = -6.1744444
+                   , longitude = 106.8294444 } }
+    , Cmd.none )
 
 
 type Msg
     = Tick Time
+    | Success Location
+    | Failure Geolocation.Error
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Tick newTime ->
-            ( newTime, Cmd.none )
+            ( { model | time = newTime }, Cmd.none )
+        Success location ->
+            ( { model | location = { latitude = location.latitude, longitude = location.longitude } }
+            , Cmd.none )
+        Failure message ->
+            ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -46,13 +65,16 @@ view : Model -> Html Msg
 view model =
     let
         date =
-            Date.fromTime model
+            Date.fromTime model.time
+
+        location =
+            Task.attempt processLocation Geolocation.now
 
         latitude =
-            -6.1744444
+            model.location.latitude
 
         longitude =
-            106.8294444
+            model.location.longitude
 
         elevation =
             0
@@ -111,3 +133,27 @@ htmlTimeStructure ( label, time ) =
             [ classList [ ( "time__shalat-time", True ) ] ]
             [ Html.text (time) ]
         ]
+
+processLocation : Result Geolocation.Error Location -> Msg
+processLocation result =
+    case result of
+        Ok location ->
+            Success location
+        Err message ->
+            Failure message
+
+getLatitude : Maybe Location -> Float
+getLatitude location =
+    case location of
+        Just location ->
+            location.latitude
+        Nothing ->
+            -6.1744444
+
+getLongitude : Maybe Location -> Float
+getLongitude location =
+    case location of
+        Just location ->
+            location.longitude
+        Nothing ->
+            106.8294444
