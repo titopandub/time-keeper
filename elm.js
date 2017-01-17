@@ -9088,24 +9088,8 @@ var _user$project$PrayTime$calculatePrayTimes = F5(
 		return {fajr: fajrTime, sunRise: sunRiseTime, dhuhr: dhuhrTime, asr: asrTime, magrib: magribTime, isya: isyaTime};
 	});
 
-var _user$project$Main$getLongitude = function (location) {
-	var _p0 = location;
-	if (_p0.ctor === 'Just') {
-		return _p0._0.longitude;
-	} else {
-		return 106.8294444;
-	}
-};
-var _user$project$Main$getLatitude = function (location) {
-	var _p1 = location;
-	if (_p1.ctor === 'Just') {
-		return _p1._0.latitude;
-	} else {
-		return -6.1744444;
-	}
-};
-var _user$project$Main$htmlTimeStructure = function (_p2) {
-	var _p3 = _p2;
+var _user$project$Main$htmlTimeStructure = function (_p0) {
+	var _p1 = _p0;
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -9134,7 +9118,7 @@ var _user$project$Main$htmlTimeStructure = function (_p2) {
 				},
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html$text(_p3._0),
+					_0: _elm_lang$html$Html$text(_p1._0),
 					_1: {ctor: '[]'}
 				}),
 			_1: {
@@ -9153,7 +9137,7 @@ var _user$project$Main$htmlTimeStructure = function (_p2) {
 					},
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html$text(_p3._1),
+						_0: _elm_lang$html$Html$text(_p1._1),
 						_1: {ctor: '[]'}
 					}),
 				_1: {ctor: '[]'}
@@ -9204,69 +9188,11 @@ var _user$project$Main$formattedDate = function (date) {
 					':',
 					_user$project$PrayTime$twoDigitsFormat(second)))));
 };
-var _user$project$Main$update = F2(
-	function (msg, model) {
-		var _p4 = msg;
-		switch (_p4.ctor) {
-			case 'Tick':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{time: _p4._0}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'Success':
-				var _p5 = _p4._0;
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							location: {latitude: _p5.latitude, longitude: _p5.longitude}
-						}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			default:
-				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-		}
-	});
-var _user$project$Main$init = {
-	ctor: '_Tuple2',
-	_0: {
-		time: 0,
-		location: {latitude: -6.1744444, longitude: 106.8294444}
-	},
-	_1: _elm_lang$core$Platform_Cmd$none
-};
-var _user$project$Main$LatLong = F2(
-	function (a, b) {
-		return {latitude: a, longitude: b};
-	});
-var _user$project$Main$Model = F2(
-	function (a, b) {
-		return {time: a, location: b};
-	});
-var _user$project$Main$Failure = function (a) {
-	return {ctor: 'Failure', _0: a};
-};
-var _user$project$Main$Success = function (a) {
-	return {ctor: 'Success', _0: a};
-};
-var _user$project$Main$processLocation = function (result) {
-	var _p6 = result;
-	if (_p6.ctor === 'Ok') {
-		return _user$project$Main$Success(_p6._0);
-	} else {
-		return _user$project$Main$Failure(_p6._0);
-	}
-};
 var _user$project$Main$view = function (model) {
 	var timeZone = _elm_lang$core$Basics$toFloat(7);
 	var elevation = 0;
 	var longitude = model.location.longitude;
 	var latitude = model.location.latitude;
-	var location = A2(_elm_lang$core$Task$attempt, _user$project$Main$processLocation, _elm_lang$geolocation$Geolocation$now);
 	var date = _elm_lang$core$Date$fromTime(model.time);
 	var htmlTimes = A2(
 		_elm_lang$core$List$map,
@@ -9302,9 +9228,76 @@ var _user$project$Main$view = function (model) {
 		},
 		htmlTimeKeeper);
 };
+var _user$project$Main$update = F2(
+	function (msg, model) {
+		var _p2 = msg;
+		switch (_p2.ctor) {
+			case 'Tick':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{time: _p2._0}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'Success':
+				var _p3 = _p2._0;
+				var newLocation = {latitude: _p3.latitude, longitude: _p3.longitude};
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{location: newLocation}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			default:
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+		}
+	});
+var _user$project$Main$LatLong = F2(
+	function (a, b) {
+		return {latitude: a, longitude: b};
+	});
+var _user$project$Main$Model = F2(
+	function (a, b) {
+		return {time: a, location: b};
+	});
+var _user$project$Main$Failure = function (a) {
+	return {ctor: 'Failure', _0: a};
+};
+var _user$project$Main$Success = function (a) {
+	return {ctor: 'Success', _0: a};
+};
+var _user$project$Main$processLocation = function (result) {
+	var _p4 = result;
+	if (_p4.ctor === 'Ok') {
+		return _user$project$Main$Success(_p4._0);
+	} else {
+		return _user$project$Main$Failure(_p4._0);
+	}
+};
 var _user$project$Main$Tick = function (a) {
 	return {ctor: 'Tick', _0: a};
 };
+var _user$project$Main$init = function () {
+	var batch = {
+		ctor: '::',
+		_0: A2(_elm_lang$core$Task$attempt, _user$project$Main$processLocation, _elm_lang$geolocation$Geolocation$now),
+		_1: {
+			ctor: '::',
+			_0: A2(_elm_lang$core$Task$perform, _user$project$Main$Tick, _elm_lang$core$Time$now),
+			_1: {ctor: '[]'}
+		}
+	};
+	return {
+		ctor: '_Tuple2',
+		_0: {
+			time: 0,
+			location: {latitude: -6.1744444, longitude: 106.8294444}
+		},
+		_1: _elm_lang$core$Platform_Cmd$batch(batch)
+	};
+}();
 var _user$project$Main$subscriptions = function (model) {
 	return A2(_elm_lang$core$Time$every, _elm_lang$core$Time$second, _user$project$Main$Tick);
 };

@@ -32,10 +32,16 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { time = 0
-      , location = { latitude = -6.1744444
-                   , longitude = 106.8294444 } }
-    , Cmd.none )
+    let
+        batch =
+            [ Task.attempt processLocation Geolocation.now
+            , Task.perform Tick Time.now
+            ]
+    in
+        ( { time = 0
+        , location = { latitude = -6.1744444
+        , longitude = 106.8294444 } }
+        , Cmd.batch batch )
 
 
 type Msg
@@ -50,8 +56,14 @@ update msg model =
         Tick newTime ->
             ( { model | time = newTime }, Cmd.none )
         Success location ->
-            ( { model | location = { latitude = location.latitude, longitude = location.longitude } }
-            , Cmd.none )
+            let
+                newLocation =
+                    { latitude = location.latitude
+                    , longitude = location.longitude
+                    }
+            in
+                ( { model | location = newLocation }
+                , Cmd.none )
         Failure message ->
             ( model, Cmd.none )
 
@@ -66,9 +78,6 @@ view model =
     let
         date =
             Date.fromTime model.time
-
-        location =
-            Task.attempt processLocation Geolocation.now
 
         latitude =
             model.location.latitude
@@ -141,19 +150,3 @@ processLocation result =
             Success location
         Err message ->
             Failure message
-
-getLatitude : Maybe Location -> Float
-getLatitude location =
-    case location of
-        Just location ->
-            location.latitude
-        Nothing ->
-            -6.1744444
-
-getLongitude : Maybe Location -> Float
-getLongitude location =
-    case location of
-        Just location ->
-            location.longitude
-        Nothing ->
-            106.8294444
