@@ -9,7 +9,7 @@
   <style>
 .time {
   width: 300px;
-  margin: 30px auto;
+  margin: 10% auto 0;
   text-align: center;
 }
 
@@ -33,11 +33,29 @@
   text-align: left;
 }
 
+button:focus {
+  outline: none;
+}
+
+.time__location-button {
+  font-size: 1.0em;
+  width: auto;
+  padding: 2% 10%;
+  margin: 20px auto;
+  text-align: center;
+  background-color: white;
+
+}
+
 @media (min-width: 1000px) {
   .time {
     width: 90%;
-    margin: 30px auto;
+    margin: 6% auto 0;
     text-align: center;
+  }
+
+  .time h1 {
+    margin: 0;
   }
 
   .time__clock {
@@ -48,7 +66,7 @@
     float: left;
     font-size: 3.5em;
     width: 33%;
-    height: 30%;
+    height: 29%;
     margin: 20px 0;
   }
 
@@ -61,6 +79,15 @@
   .time__shalat-time {
     display: block;
     width: 100%;
+    text-align: center;
+  }
+
+  .time__location-button {
+    background-color: white;
+    font-size: 2.5em;
+    width: auto;
+    padding: 2% 10%;
+    margin: 17px auto;
     text-align: center;
   }
 }

@@ -8854,6 +8854,121 @@ var _elm_lang$html$Html_Attributes$classList = function (list) {
 };
 var _elm_lang$html$Html_Attributes$style = _elm_lang$virtual_dom$VirtualDom$style;
 
+var _elm_lang$html$Html_Events$keyCode = A2(_elm_lang$core$Json_Decode$field, 'keyCode', _elm_lang$core$Json_Decode$int);
+var _elm_lang$html$Html_Events$targetChecked = A2(
+	_elm_lang$core$Json_Decode$at,
+	{
+		ctor: '::',
+		_0: 'target',
+		_1: {
+			ctor: '::',
+			_0: 'checked',
+			_1: {ctor: '[]'}
+		}
+	},
+	_elm_lang$core$Json_Decode$bool);
+var _elm_lang$html$Html_Events$targetValue = A2(
+	_elm_lang$core$Json_Decode$at,
+	{
+		ctor: '::',
+		_0: 'target',
+		_1: {
+			ctor: '::',
+			_0: 'value',
+			_1: {ctor: '[]'}
+		}
+	},
+	_elm_lang$core$Json_Decode$string);
+var _elm_lang$html$Html_Events$defaultOptions = _elm_lang$virtual_dom$VirtualDom$defaultOptions;
+var _elm_lang$html$Html_Events$onWithOptions = _elm_lang$virtual_dom$VirtualDom$onWithOptions;
+var _elm_lang$html$Html_Events$on = _elm_lang$virtual_dom$VirtualDom$on;
+var _elm_lang$html$Html_Events$onFocus = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'focus',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onBlur = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'blur',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onSubmitOptions = _elm_lang$core$Native_Utils.update(
+	_elm_lang$html$Html_Events$defaultOptions,
+	{preventDefault: true});
+var _elm_lang$html$Html_Events$onSubmit = function (msg) {
+	return A3(
+		_elm_lang$html$Html_Events$onWithOptions,
+		'submit',
+		_elm_lang$html$Html_Events$onSubmitOptions,
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onCheck = function (tagger) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'change',
+		A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetChecked));
+};
+var _elm_lang$html$Html_Events$onInput = function (tagger) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'input',
+		A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetValue));
+};
+var _elm_lang$html$Html_Events$onMouseOut = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseout',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseOver = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseover',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseLeave = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseleave',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseEnter = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseenter',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseUp = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mouseup',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onMouseDown = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'mousedown',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onDoubleClick = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'dblclick',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$onClick = function (msg) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'click',
+		_elm_lang$core$Json_Decode$succeed(msg));
+};
+var _elm_lang$html$Html_Events$Options = F2(
+	function (a, b) {
+		return {stopPropagation: a, preventDefault: b};
+	});
+
 var _user$project$PrayTime$fix = F2(
 	function (a, b) {
 		var aVar = a - (b * _elm_lang$core$Basics$toFloat(
@@ -9188,6 +9303,86 @@ var _user$project$Main$formattedDate = function (date) {
 					':',
 					_user$project$PrayTime$twoDigitsFormat(second)))));
 };
+var _user$project$Main$LatLong = F2(
+	function (a, b) {
+		return {latitude: a, longitude: b};
+	});
+var _user$project$Main$Model = F2(
+	function (a, b) {
+		return {time: a, location: b};
+	});
+var _user$project$Main$Failure = function (a) {
+	return {ctor: 'Failure', _0: a};
+};
+var _user$project$Main$Success = function (a) {
+	return {ctor: 'Success', _0: a};
+};
+var _user$project$Main$processLocation = function (result) {
+	var _p2 = result;
+	if (_p2.ctor === 'Ok') {
+		return _user$project$Main$Success(_p2._0);
+	} else {
+		return _user$project$Main$Failure(_p2._0);
+	}
+};
+var _user$project$Main$update = F2(
+	function (msg, model) {
+		var _p3 = msg;
+		switch (_p3.ctor) {
+			case 'Tick':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{time: _p3._0}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'LookupLocation':
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: A2(_elm_lang$core$Task$attempt, _user$project$Main$processLocation, _elm_lang$geolocation$Geolocation$now)
+				};
+			case 'Success':
+				var _p4 = _p3._0;
+				var newLocation = {latitude: _p4.latitude, longitude: _p4.longitude};
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{location: newLocation}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			default:
+				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+		}
+	});
+var _user$project$Main$LookupLocation = {ctor: 'LookupLocation'};
+var _user$project$Main$buttonGeolocation = {
+	ctor: '::',
+	_0: A2(
+		_elm_lang$html$Html$button,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$LookupLocation),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$classList(
+					{
+						ctor: '::',
+						_0: {ctor: '_Tuple2', _0: 'time__location-button', _1: true},
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			}
+		},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('Cek Lokasi'),
+			_1: {ctor: '[]'}
+		}),
+	_1: {ctor: '[]'}
+};
 var _user$project$Main$view = function (model) {
 	var timeZone = _elm_lang$core$Basics$toFloat(7);
 	var elevation = 0;
@@ -9213,7 +9408,7 @@ var _user$project$Main$view = function (model) {
 			_0: htmlClock,
 			_1: {ctor: '[]'}
 		},
-		htmlTimes);
+		A2(_elm_lang$core$Basics_ops['++'], htmlTimes, _user$project$Main$buttonGeolocation));
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -9228,66 +9423,14 @@ var _user$project$Main$view = function (model) {
 		},
 		htmlTimeKeeper);
 };
-var _user$project$Main$update = F2(
-	function (msg, model) {
-		var _p2 = msg;
-		switch (_p2.ctor) {
-			case 'Tick':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{time: _p2._0}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			case 'Success':
-				var _p3 = _p2._0;
-				var newLocation = {latitude: _p3.latitude, longitude: _p3.longitude};
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{location: newLocation}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			default:
-				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-		}
-	});
-var _user$project$Main$LatLong = F2(
-	function (a, b) {
-		return {latitude: a, longitude: b};
-	});
-var _user$project$Main$Model = F2(
-	function (a, b) {
-		return {time: a, location: b};
-	});
-var _user$project$Main$Failure = function (a) {
-	return {ctor: 'Failure', _0: a};
-};
-var _user$project$Main$Success = function (a) {
-	return {ctor: 'Success', _0: a};
-};
-var _user$project$Main$processLocation = function (result) {
-	var _p4 = result;
-	if (_p4.ctor === 'Ok') {
-		return _user$project$Main$Success(_p4._0);
-	} else {
-		return _user$project$Main$Failure(_p4._0);
-	}
-};
 var _user$project$Main$Tick = function (a) {
 	return {ctor: 'Tick', _0: a};
 };
 var _user$project$Main$init = function () {
 	var batch = {
 		ctor: '::',
-		_0: A2(_elm_lang$core$Task$attempt, _user$project$Main$processLocation, _elm_lang$geolocation$Geolocation$now),
-		_1: {
-			ctor: '::',
-			_0: A2(_elm_lang$core$Task$perform, _user$project$Main$Tick, _elm_lang$core$Time$now),
-			_1: {ctor: '[]'}
-		}
+		_0: A2(_elm_lang$core$Task$perform, _user$project$Main$Tick, _elm_lang$core$Time$now),
+		_1: {ctor: '[]'}
 	};
 	return {
 		ctor: '_Tuple2',

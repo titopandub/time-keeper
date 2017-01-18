@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Html exposing (Html)
 import Html.Attributes exposing (classList)
+import Html.Events exposing (onClick)
 import Time exposing (Time, second)
 import Date exposing (Date)
 import Task exposing (Task)
@@ -34,9 +35,7 @@ init : ( Model, Cmd Msg )
 init =
     let
         batch =
-            [ Task.attempt processLocation Geolocation.now
-            , Task.perform Tick Time.now
-            ]
+            [ Task.perform Tick Time.now ]
     in
         ( { time = 0
         , location = { latitude = -6.1744444
@@ -46,6 +45,7 @@ init =
 
 type Msg
     = Tick Time
+    | LookupLocation
     | Success Location
     | Failure Geolocation.Error
 
@@ -55,6 +55,8 @@ update msg model =
     case msg of
         Tick newTime ->
             ( { model | time = newTime }, Cmd.none )
+        LookupLocation ->
+            ( model, Task.attempt processLocation Geolocation.now )
         Success location ->
             let
                 newLocation =
@@ -105,7 +107,7 @@ view model =
                 |> toHtmlClock
 
         htmlTimeKeeper =
-            ([ htmlClock ]) ++ (htmlTimes)
+            ([ htmlClock ]) ++ (htmlTimes) ++ buttonGeolocation
     in
         Html.div [ classList [ ( "time", True ) ] ] htmlTimeKeeper
 
@@ -131,7 +133,7 @@ toHtmlClock clock =
         [ classList [ ( "time__clock", True ) ] ]
         [ Html.h1 [] [ Html.text (clock) ] ]
 
-
+htmlTimeStructure : ( String, String ) -> Html msg
 htmlTimeStructure ( label, time ) =
     Html.div
         [ classList [ ( "time__shalat", True ) ] ]
@@ -150,3 +152,10 @@ processLocation result =
             Success location
         Err message ->
             Failure message
+
+buttonGeolocation =
+    [ Html.button
+        [ onClick LookupLocation
+        , classList [ ("time__location-button", True) ]
+        ]
+        [ Html.text "Cek Lokasi" ] ]
