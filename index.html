@@ -96,6 +96,7 @@ button:focus {
 </head>
 
 <body>
+  <div id="main">Loading...</div>
   <div id="status"></div>
   <noscript>You need enable JavaScript.</noscript>
   <script type="text/javascript" src="elm.js"></script>
@@ -116,10 +117,15 @@ function waitUntilInstalled(registration) {
   });
 };
 
+function loadApplication() {
+  var node = document.getElementById('main');
+  var app = Elm.Main.embed(node);
+}
+
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./service-worker.js', {scope: './'})
     .then(waitUntilInstalled)
-    .then(Elm.Main.fullscreen())
+    .then(loadApplication)
     .catch(function(error) {
       document.querySelector('#status').textContent = error;
     });
