@@ -66,12 +66,12 @@
 }
 
   </style>
-  <script type="text/javascript" src="elm.js"></script>
 </head>
 
 <body>
   <div id="status"></div>
-  <script type="text/javascript"></script>
+  <noscript>You need enable JavaScript.</noscript>
+  <script type="text/javascript" src="elm.js"></script>
   <script type="text/javascript">
 function waitUntilInstalled(registration) {
   return new Promise(function(resolve, reject) {
@@ -87,7 +87,8 @@ function waitUntilInstalled(registration) {
       resolve();
     }
   });
-}
+};
+
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./service-worker.js', {scope: './'})
     .then(waitUntilInstalled)
