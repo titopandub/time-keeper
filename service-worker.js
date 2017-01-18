@@ -12,7 +12,7 @@
 */
 
 importScripts('./serviceworker-cache-polyfill.js');
-var CACHE_VERSION = 9;
+var CACHE_VERSION = 10;
 var CURRENT_CACHES = {
   prefetch: 'prefetch-cache-v' + CACHE_VERSION
 };
@@ -23,6 +23,7 @@ self.addEventListener('install', function(event) {
   var urlsToPrefetch = [
     'elm.js',
     'index.html',
+    'manifest.json'
   ];
 
   // All of these logging statements should be visible via the "Inspect" interface
