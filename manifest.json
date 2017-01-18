@@ -3,5 +3,6 @@
   "name": "Aplikasi untuk Melihat Waktu Sholat",
   "start_url": "/index.html",
   "display": "standalone",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "theme_color": "#81F781"
 }
