@@ -131,9 +131,10 @@ if ('serviceWorker' in navigator) {
       document.querySelector('#status').textContent = error;
     });
 } else {
+  loadApplication();
   var aElement = document.createElement('a');
   aElement.href = 'http://www.chromium.org/blink/serviceworker/service-worker-faq';
-  aElement.textContent = 'Service workers are not supported in the current browser.';
+  aElement.textContent = 'Service workers are not supported in the current browser. Can\'t work offline.';
   document.querySelector('#status').appendChild(aElement);
 }
   </script>
