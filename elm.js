@@ -9436,7 +9436,7 @@ var _user$project$Main$init = function () {
 		ctor: '_Tuple2',
 		_0: {
 			time: 0,
-			location: {latitude: -6.1744444, longitude: 106.8294444}
+			location: {latitude: -6.2276252, longitude: 106.7947417}
 		},
 		_1: _elm_lang$core$Platform_Cmd$batch(batch)
 	};

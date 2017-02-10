@@ -38,8 +38,8 @@ init =
             [ Task.perform Tick Time.now ]
     in
         ( { time = 0
-        , location = { latitude = -6.1744444
-        , longitude = 106.8294444 } }
+        , location = { latitude = -6.2276252
+        , longitude = 106.7947417 } }
         , Cmd.batch batch )
 
 
