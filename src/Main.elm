@@ -1,53 +1,52 @@
-module Main exposing (..)
+module Main exposing (main)
 
+import Browser
 import Html exposing (Html)
 import Html.Attributes exposing (classList)
 import Html.Events exposing (onClick)
-import Time exposing (Time, second)
-import Date exposing (Date)
-import Task exposing (Task)
-import Geolocation exposing (Location)
-import Debug exposing (log)
+import Time exposing (Posix)
+import Task
 import PrayTime exposing (..)
 
 
+main : Program () Model Msg
 main =
-    Html.program
+    Browser.element
         { init = init
         , view = view
         , update = update
         , subscriptions = subscriptions
         }
 
+
 type alias LatLong =
-    { latitude: Float
-    , longitude: Float
+    { latitude : Float
+    , longitude : Float
     }
 
+
 type alias Model =
-    ( { time: Time
-      , location: LatLong
+    { time : Posix
+    , zone : Time.Zone
+    , location : LatLong
+    }
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { time = Time.millisToPosix 0
+      , zone = Time.utc
+      , location =
+            { latitude = -6.2276252
+            , longitude = 106.7947417
+            }
       }
+    , Task.perform Tick Time.now
     )
 
 
-init : ( Model, Cmd Msg )
-init =
-    let
-        batch =
-            [ Task.perform Tick Time.now ]
-    in
-        ( { time = 0
-        , location = { latitude = -6.2276252
-        , longitude = 106.7947417 } }
-        , Cmd.batch batch )
-
-
 type Msg
-    = Tick Time
-    | LookupLocation
-    | Success Location
-    | Failure Geolocation.Error
+    = Tick Posix
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -55,31 +54,34 @@ update msg model =
     case msg of
         Tick newTime ->
             ( { model | time = newTime }, Cmd.none )
-        LookupLocation ->
-            ( model, Task.attempt processLocation Geolocation.now )
-        Success location ->
-            let
-                newLocation =
-                    { latitude = location.latitude
-                    , longitude = location.longitude
-                    }
-            in
-                ( { model | location = newLocation }
-                , Cmd.none )
-        Failure message ->
-            ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Time.every second Tick
+    Time.every 1000 Tick
 
 
 view : Model -> Html Msg
 view model =
     let
-        date =
-            Date.fromTime model.time
+        hour =
+            Time.toHour model.zone model.time
+
+        minute =
+            Time.toMinute model.zone model.time
+
+        second =
+            Time.toSecond model.zone model.time
+
+        day =
+            Time.toDay model.zone model.time
+
+        month =
+            Time.toMonth model.zone model.time
+                |> monthToNumber
+
+        year =
+            Time.toYear model.zone model.time
 
         latitude =
             model.location.latitude
@@ -91,11 +93,20 @@ view model =
             0
 
         timeZone =
-            toFloat 7
+            7
+
+        -- Create time info for prayer calculation
+        timeInfo =
+            { year = year
+            , month = month
+            , day = day
+            , hour = hour
+            , minute = minute
+            , second = second
+            }
 
         prayerTimesList =
-            date
-                |> calculatePrayTimes latitude longitude elevation timeZone
+            calculatePrayTimes latitude longitude elevation timeZone timeInfo
                 |> adjustTimes longitude timeZone
                 |> formatTimes
                 |> toTimeList
@@ -105,39 +116,69 @@ view model =
                 |> List.map htmlTimeStructure
 
         htmlClock =
-            date
-                |> formattedDate
+            formattedTime hour minute second
                 |> toHtmlClock
 
         htmlIqomah =
-            htmlIqomahCountdown date prayerTimesList
+            htmlIqomahCountdown timeInfo prayerTimesList
 
         htmlTimeKeeper =
-            ([ htmlClock, htmlIqomah ]) ++ (htmlTimes) ++ buttonGeolocation
+            [ htmlClock, htmlIqomah ] ++ htmlTimes
     in
-        Html.div [ classList [ ( "time", True ) ] ] htmlTimeKeeper
+    Html.div [ classList [ ( "time", True ) ] ] htmlTimeKeeper
 
 
-formattedDate : Date -> String
-formattedDate date =
-    let
-        hour =
-            Date.hour date
+monthToNumber : Time.Month -> Int
+monthToNumber month =
+    case month of
+        Time.Jan ->
+            1
 
-        minute =
-            Date.minute date
+        Time.Feb ->
+            2
 
-        second =
-            Date.second date
-    in
-        twoDigitsFormat (hour) ++ ":" ++ twoDigitsFormat (minute) ++ ":" ++ twoDigitsFormat (second)
+        Time.Mar ->
+            3
+
+        Time.Apr ->
+            4
+
+        Time.May ->
+            5
+
+        Time.Jun ->
+            6
+
+        Time.Jul ->
+            7
+
+        Time.Aug ->
+            8
+
+        Time.Sep ->
+            9
+
+        Time.Oct ->
+            10
+
+        Time.Nov ->
+            11
+
+        Time.Dec ->
+            12
+
+
+formattedTime : Int -> Int -> Int -> String
+formattedTime hour minute second =
+    twoDigitsFormat hour ++ ":" ++ twoDigitsFormat minute ++ ":" ++ twoDigitsFormat second
 
 
 toHtmlClock : String -> Html msg
 toHtmlClock clock =
     Html.div
         [ classList [ ( "time__clock", True ) ] ]
-        [ Html.h1 [] [ Html.text (clock) ] ]
+        [ Html.h1 [] [ Html.text clock ] ]
+
 
 htmlTimeStructure : ( String, String ) -> Html msg
 htmlTimeStructure ( label, time ) =
@@ -145,29 +186,24 @@ htmlTimeStructure ( label, time ) =
         [ classList [ ( "time__shalat", True ) ] ]
         [ Html.div
             [ classList [ ( "time__label", True ) ] ]
-            [ Html.text (label) ]
+            [ Html.text label ]
         , Html.div
             [ classList [ ( "time__shalat-time", True ) ] ]
-            [ Html.text (time) ]
+            [ Html.text time ]
         ]
-
-processLocation : Result Geolocation.Error Location -> Msg
-processLocation result =
-    case result of
-        Ok location ->
-            Success location
-        Err message ->
-            Failure message
-
-buttonGeolocation =
-    [ Html.button
-        [ onClick LookupLocation
-        , classList [ ("time__location-button", True) ]
-        ]
-        [ Html.text "Cek Lokasi" ] ]
 
 
 -- Iqomah countdown functions
+type alias TimeInfo =
+    { year : Int
+    , month : Int
+    , day : Int
+    , hour : Int
+    , minute : Int
+    , second : Int
+    }
+
+
 timeStringToSeconds : String -> Int
 timeStringToSeconds timeStr =
     let
@@ -179,7 +215,7 @@ timeStringToSeconds timeStr =
                 |> List.head
                 |> Maybe.withDefault "0"
                 |> String.toInt
-                |> Result.withDefault 0
+                |> Maybe.withDefault 0
 
         minutes =
             parts
@@ -187,38 +223,29 @@ timeStringToSeconds timeStr =
                 |> List.head
                 |> Maybe.withDefault "0"
                 |> String.toInt
-                |> Result.withDefault 0
+                |> Maybe.withDefault 0
     in
-        (hours * 3600) + (minutes * 60)
+    (hours * 3600) + (minutes * 60)
 
 
-dateToSeconds : Date -> Int
-dateToSeconds date =
-    let
-        hours =
-            Date.hour date
-
-        minutes =
-            Date.minute date
-
-        seconds =
-            Date.second date
-    in
-        (hours * 3600) + (minutes * 60) + seconds
+timeInfoToSeconds : TimeInfo -> Int
+timeInfoToSeconds timeInfo =
+    (timeInfo.hour * 3600) + (timeInfo.minute * 60) + timeInfo.second
 
 
-findIqomahStatus : Date -> List ( String, String ) -> Maybe ( String, Int )
-findIqomahStatus date prayerTimes =
+findIqomahStatus : TimeInfo -> List ( String, String ) -> Maybe ( String, Int )
+findIqomahStatus timeInfo prayerTimes =
     let
         currentSeconds =
-            dateToSeconds date
+            timeInfoToSeconds timeInfo
 
         iqomahDuration =
-            5 * 60  -- 5 minutes in seconds
+            5 * 60
 
         checkPrayer ( name, timeStr ) =
             if name == "Terbit" then
                 Nothing
+
             else
                 let
                     prayerSeconds =
@@ -230,15 +257,16 @@ findIqomahStatus date prayerTimes =
                     remainingSeconds =
                         iqomahDuration - secondsSincePrayer
                 in
-                    if secondsSincePrayer >= 0 && secondsSincePrayer < iqomahDuration then
-                        Just ( name, remainingSeconds )
-                    else
-                        Nothing
+                if secondsSincePrayer >= 0 && secondsSincePrayer < iqomahDuration then
+                    Just ( name, remainingSeconds )
+
+                else
+                    Nothing
 
         results =
             List.filterMap checkPrayer prayerTimes
     in
-        List.head results
+    List.head results
 
 
 formatIqomahTime : Int -> String
@@ -250,12 +278,12 @@ formatIqomahTime seconds =
         secs =
             modBy 60 seconds
     in
-        (toString mins) ++ " min " ++ (toString secs) ++ " sec"
+    String.fromInt mins ++ " min " ++ String.fromInt secs ++ " sec"
 
 
-htmlIqomahCountdown : Date -> List ( String, String ) -> Html msg
-htmlIqomahCountdown date prayerTimes =
-    case findIqomahStatus date prayerTimes of
+htmlIqomahCountdown : TimeInfo -> List ( String, String ) -> Html msg
+htmlIqomahCountdown timeInfo prayerTimes =
+    case findIqomahStatus timeInfo prayerTimes of
         Just ( prayerName, remainingSeconds ) ->
             Html.div
                 [ classList [ ( "time__iqomah", True ) ] ]

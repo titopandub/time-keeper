@@ -4,3 +4,7 @@ elm-stuff
 repl-temp-*
 
 *.swp
+
+# elm binary
+elm
+elm.gz
