@@ -41,12 +41,16 @@ init _ =
             , longitude = 106.7947417
             }
       }
-    , Task.perform Tick Time.now
+    , Cmd.batch
+        [ Task.perform Tick Time.now
+        , Task.perform AdjustTimeZone Time.here
+        ]
     )
 
 
 type Msg
     = Tick Posix
+    | AdjustTimeZone Time.Zone
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -54,6 +58,9 @@ update msg model =
     case msg of
         Tick newTime ->
             ( { model | time = newTime }, Cmd.none )
+
+        AdjustTimeZone newZone ->
+            ( { model | zone = newZone }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg

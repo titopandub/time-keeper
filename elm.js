@@ -5205,16 +5205,13 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$element = _Browser_element;
+var $author$project$Main$AdjustTimeZone = function (a) {
+	return {$: 'AdjustTimeZone', a: a};
+};
 var $author$project$Main$Tick = function (a) {
 	return {$: 'Tick', a: a};
 };
-var $elm$time$Time$Posix = function (a) {
-	return {$: 'Posix', a: a};
-};
-var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
-var $elm$core$Basics$negate = function (n) {
-	return -n;
-};
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$time$Time$Name = function (a) {
 	return {$: 'Name', a: a};
 };
@@ -5226,6 +5223,14 @@ var $elm$time$Time$Zone = F2(
 		return {$: 'Zone', a: a, b: b};
 	});
 var $elm$time$Time$customZone = $elm$time$Time$Zone;
+var $elm$time$Time$here = _Time_here(_Utils_Tuple0);
+var $elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
+};
+var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
 var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
 var $elm$time$Time$utc = A2($elm$time$Time$Zone, 0, _List_Nil);
 var $author$project$Main$init = function (_v0) {
@@ -5235,7 +5240,12 @@ var $author$project$Main$init = function (_v0) {
 			time: $elm$time$Time$millisToPosix(0),
 			zone: $elm$time$Time$utc
 		},
-		A2($elm$core$Task$perform, $author$project$Main$Tick, $elm$time$Time$now));
+		$elm$core$Platform$Cmd$batch(
+			_List_fromArray(
+				[
+					A2($elm$core$Task$perform, $author$project$Main$Tick, $elm$time$Time$now),
+					A2($elm$core$Task$perform, $author$project$Main$AdjustTimeZone, $elm$time$Time$here)
+				])));
 };
 var $elm$time$Time$Every = F2(
 	function (a, b) {
@@ -5639,16 +5649,24 @@ var $elm$time$Time$every = F2(
 var $author$project$Main$subscriptions = function (model) {
 	return A2($elm$time$Time$every, 1000, $author$project$Main$Tick);
 };
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$update = F2(
 	function (msg, model) {
-		var newTime = msg.a;
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{time: newTime}),
-			$elm$core$Platform$Cmd$none);
+		if (msg.$ === 'Tick') {
+			var newTime = msg.a;
+			return _Utils_Tuple2(
+				_Utils_update(
+					model,
+					{time: newTime}),
+				$elm$core$Platform$Cmd$none);
+		} else {
+			var newZone = msg.a;
+			return _Utils_Tuple2(
+				_Utils_update(
+					model,
+					{zone: newZone}),
+				$elm$core$Platform$Cmd$none);
+		}
 	});
 var $author$project$PrayTime$adjustTimes = F3(
 	function (longitude, timeZone, _v0) {
