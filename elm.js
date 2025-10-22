@@ -5238,6 +5238,7 @@ var $elm$time$Time$utc = A2($elm$time$Time$Zone, 0, _List_Nil);
 var $author$project$Main$init = function (flags) {
 	return _Utils_Tuple2(
 		{
+			initialTime: $elm$core$Maybe$Nothing,
 			location: {latitude: -6.2276252, longitude: 106.7947417},
 			testMode: flags.testIqomah,
 			testOffset: flags.testOffset,
@@ -5693,10 +5694,18 @@ var $author$project$Main$update = F2(
 		switch (msg.$) {
 			case 'Tick':
 				var newTime = msg.a;
+				var updatedInitialTime = function () {
+					var _v1 = model.initialTime;
+					if (_v1.$ === 'Nothing') {
+						return $elm$core$Maybe$Just(newTime);
+					} else {
+						return model.initialTime;
+					}
+				}();
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{time: newTime}),
+						{initialTime: updatedInitialTime, time: newTime}),
 					$elm$core$Platform$Cmd$none);
 			case 'AdjustTimeZone':
 				var newZone = msg.a;
@@ -5966,8 +5975,8 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
-var $author$project$Main$getTestTime = F3(
-	function (prayerTimes, prayerName, offsetMinutes) {
+var $author$project$Main$getTestTime = F4(
+	function (prayerTimes, prayerName, offsetMinutes, elapsedSeconds) {
 		var normalizedName = $elm$core$String$toLower(prayerName);
 		var matchingPrayer = $elm$core$List$head(
 			A2(
@@ -5984,7 +5993,6 @@ var $author$project$Main$getTestTime = F3(
 			var _v1 = matchingPrayer.a;
 			var timeStr = _v1.b;
 			var parts = A2($elm$core$String$split, ':', timeStr);
-			var newSecond = 30;
 			var minutes = A2(
 				$elm$core$Maybe$withDefault,
 				0,
@@ -6002,9 +6010,10 @@ var $author$project$Main$getTestTime = F3(
 						$elm$core$Maybe$withDefault,
 						'0',
 						$elm$core$List$head(parts))));
-			var totalMinutes = ((hours * 60) + minutes) + offsetMinutes;
-			var newHour = A2($elm$core$Basics$modBy, 24, (totalMinutes / 60) | 0);
-			var newMinute = A2($elm$core$Basics$modBy, 60, totalMinutes);
+			var totalSeconds = (((hours * 3600) + (minutes * 60)) + (offsetMinutes * 60)) + elapsedSeconds;
+			var newHour = A2($elm$core$Basics$modBy, 24, (totalSeconds / 3600) | 0);
+			var newMinute = A2($elm$core$Basics$modBy, 60, (totalSeconds / 60) | 0);
+			var newSecond = A2($elm$core$Basics$modBy, 60, totalSeconds);
 			return _Utils_Tuple3(newHour, newMinute, newSecond);
 		} else {
 			return defaultTime;
@@ -6223,16 +6232,16 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
+var $elm$time$Time$posixToMillis = function (_v0) {
+	var millis = _v0.a;
+	return millis;
+};
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$time$Time$flooredDiv = F2(
 	function (numerator, denominator) {
 		return $elm$core$Basics$floor(numerator / denominator);
 	});
-var $elm$time$Time$posixToMillis = function (_v0) {
-	var millis = _v0.a;
-	return millis;
-};
 var $elm$time$Time$toAdjustedMinutesHelp = F3(
 	function (defaultOffset, posixMinutes, eras) {
 		toAdjustedMinutesHelp:
@@ -6403,9 +6412,9 @@ var $author$project$Main$view = function (model) {
 	var year = A2($elm$time$Time$toYear, model.zone, model.time);
 	var timeZone = 7;
 	var testModeIndicator = function () {
-		var _v2 = model.testMode;
-		if (_v2.$ === 'Just') {
-			var prayerName = _v2.a;
+		var _v3 = model.testMode;
+		if (_v3.$ === 'Just') {
+			var prayerName = _v3.a;
 			return A2(
 				$elm$html$Html$div,
 				_List_fromArray(
@@ -6452,6 +6461,15 @@ var $author$project$Main$view = function (model) {
 			]));
 	var latitude = model.location.latitude;
 	var elevation = 0;
+	var elapsedSeconds = function () {
+		var _v2 = model.initialTime;
+		if (_v2.$ === 'Just') {
+			var initialPosix = _v2.a;
+			return (($elm$time$Time$posixToMillis(model.time) - $elm$time$Time$posixToMillis(initialPosix)) / 1000) | 0;
+		} else {
+			return 0;
+		}
+	}();
 	var day = A2($elm$time$Time$toDay, model.zone, model.time);
 	var baseSecond = A2($elm$time$Time$toSecond, model.zone, model.time);
 	var baseMinute = A2($elm$time$Time$toMinute, model.zone, model.time);
@@ -6475,7 +6493,7 @@ var $author$project$Main$view = function (model) {
 		var _v1 = model.testMode;
 		if (_v1.$ === 'Just') {
 			var prayerName = _v1.a;
-			return A3($author$project$Main$getTestTime, basePrayerTimesList, prayerName, model.testOffset);
+			return A4($author$project$Main$getTestTime, basePrayerTimesList, prayerName, model.testOffset, elapsedSeconds);
 		} else {
 			return _Utils_Tuple3(baseHour, baseMinute, baseSecond);
 		}

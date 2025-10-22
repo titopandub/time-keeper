@@ -44,6 +44,7 @@ type alias Model =
     , location : LatLong
     , testMode : Maybe String
     , testOffset : Int
+    , initialTime : Maybe Posix
     }
 
 
@@ -57,6 +58,7 @@ init flags =
             }
       , testMode = flags.testIqomah
       , testOffset = flags.testOffset
+      , initialTime = Nothing
       }
     , Cmd.batch
         [ Task.perform Tick Time.now
@@ -76,7 +78,16 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Tick newTime ->
-            ( { model | time = newTime }, Cmd.none )
+            let
+                updatedInitialTime =
+                    case model.initialTime of
+                        Nothing ->
+                            Just newTime
+
+                        Just _ ->
+                            model.initialTime
+            in
+            ( { model | time = newTime, initialTime = updatedInitialTime }, Cmd.none )
 
         AdjustTimeZone newZone ->
             ( { model | zone = newZone }, Cmd.none )
@@ -138,11 +149,20 @@ view model =
                 |> formatTimes
                 |> toTimeList
 
+        -- Calculate elapsed seconds for test mode ticking
+        elapsedSeconds =
+            case model.initialTime of
+                Just initialPosix ->
+                    (Time.posixToMillis model.time - Time.posixToMillis initialPosix) // 1000
+
+                Nothing ->
+                    0
+
         -- Override time if in test mode
         ( hour, minute, second ) =
             case model.testMode of
                 Just prayerName ->
-                    getTestTime basePrayerTimesList prayerName model.testOffset
+                    getTestTime basePrayerTimesList prayerName model.testOffset elapsedSeconds
 
                 Nothing ->
                     ( baseHour, baseMinute, baseSecond )
@@ -279,8 +299,8 @@ type alias TimeInfo =
 
 
 -- Test mode helper function
-getTestTime : List ( String, String ) -> String -> Int -> ( Int, Int, Int )
-getTestTime prayerTimes prayerName offsetMinutes =
+getTestTime : List ( String, String ) -> String -> Int -> Int -> ( Int, Int, Int )
+getTestTime prayerTimes prayerName offsetMinutes elapsedSeconds =
     let
         normalizedName =
             String.toLower prayerName
@@ -314,18 +334,18 @@ getTestTime prayerTimes prayerName offsetMinutes =
                         |> String.toInt
                         |> Maybe.withDefault 0
 
-                -- Add offset minutes
-                totalMinutes =
-                    (hours * 60) + minutes + offsetMinutes
+                -- Calculate base time: prayer time + offset minutes + elapsed seconds
+                totalSeconds =
+                    (hours * 3600) + (minutes * 60) + (offsetMinutes * 60) + elapsedSeconds
 
                 newHour =
-                    modBy 24 (totalMinutes // 60)
+                    modBy 24 (totalSeconds // 3600)
 
                 newMinute =
-                    modBy 60 totalMinutes
+                    modBy 60 ((totalSeconds // 60))
 
                 newSecond =
-                    30
+                    modBy 60 totalSeconds
             in
             ( newHour, newMinute, newSecond )
 
