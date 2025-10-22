@@ -1,6 +1,14 @@
 module PrayTime exposing (..)
 
-import Date exposing (Date)
+
+type alias TimeInfo =
+    { year : Int
+    , month : Int
+    , day : Int
+    , hour : Int
+    , minute : Int
+    , second : Int
+    }
 
 
 toTimeList : FormattedPrayTimes -> List ( String, String )
@@ -24,11 +32,11 @@ type alias PrayTimes =
     }
 
 
-calculatePrayTimes : Float -> Float -> Float -> Float -> Date -> PrayTimes
-calculatePrayTimes latitude longitude elevation timeZone date =
+calculatePrayTimes : Float -> Float -> Float -> Float -> TimeInfo -> PrayTimes
+calculatePrayTimes latitude longitude elevation timeZone timeInfo =
     let
         julianDate =
-            julianDateByCoordinate longitude (toJulianDate date)
+            julianDateByCoordinate longitude (toJulianDate timeInfo)
 
         fajrTime =
             sunAngleTime latitude 20 julianDate 0.20833333333333334 CCW
@@ -95,9 +103,9 @@ formatTime time =
 twoDigitsFormat : Int -> String
 twoDigitsFormat number =
     if number < 10 then
-        "0" ++ toString (number)
+        "0" ++ String.fromInt number
     else
-        toString (number)
+        String.fromInt number
 
 
 adjustTimes : Float -> Float -> PrayTimes -> PrayTimes
@@ -222,62 +230,22 @@ riseSetAngle elevation =
         0.833 + angle
 
 
-monthToInt : Date.Month -> Int
-monthToInt month =
-    case month of
-        Date.Jan ->
-            1
-
-        Date.Feb ->
-            2
-
-        Date.Mar ->
-            3
-
-        Date.Apr ->
-            4
-
-        Date.May ->
-            5
-
-        Date.Jun ->
-            6
-
-        Date.Jul ->
-            7
-
-        Date.Aug ->
-            8
-
-        Date.Sep ->
-            9
-
-        Date.Oct ->
-            10
-
-        Date.Nov ->
-            11
-
-        Date.Dec ->
-            12
-
-
 julianDateByCoordinate : Float -> Float -> Float
 julianDateByCoordinate longitude julianDate =
     julianDate - (longitude / (15 * 24))
 
 
-toJulianDate : Date -> Float
-toJulianDate date =
+toJulianDate : TimeInfo -> Float
+toJulianDate timeInfo =
     let
         year =
-            Date.year date
+            timeInfo.year
 
         month =
-            monthToInt (Date.month date)
+            timeInfo.month
 
         day =
-            Date.day date
+            timeInfo.day
 
         julianYear =
             if month <= 2 then
