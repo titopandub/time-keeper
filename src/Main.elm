@@ -2,7 +2,7 @@ port module Main exposing (main)
 
 import Browser
 import Html exposing (Html)
-import Html.Attributes exposing (classList)
+import Html.Attributes exposing (classList, style)
 import Html.Events exposing (onClick)
 import Time exposing (Posix)
 import Task
@@ -16,7 +16,13 @@ port requestLocation : () -> Cmd msg
 port receiveLocation : (LatLong -> msg) -> Sub msg
 
 
-main : Program () Model Msg
+type alias Flags =
+    { testIqomah : Maybe String
+    , testOffset : Int
+    }
+
+
+main : Program Flags Model Msg
 main =
     Browser.element
         { init = init
@@ -36,17 +42,21 @@ type alias Model =
     { time : Posix
     , zone : Time.Zone
     , location : LatLong
+    , testMode : Maybe String
+    , testOffset : Int
     }
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
+init : Flags -> ( Model, Cmd Msg )
+init flags =
     ( { time = Time.millisToPosix 0
       , zone = Time.utc
       , location =
             { latitude = -6.2276252
             , longitude = 106.7947417
             }
+      , testMode = flags.testIqomah
+      , testOffset = flags.testOffset
       }
     , Cmd.batch
         [ Task.perform Tick Time.now
@@ -89,13 +99,13 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     let
-        hour =
+        baseHour =
             Time.toHour model.zone model.time
 
-        minute =
+        baseMinute =
             Time.toMinute model.zone model.time
 
-        second =
+        baseSecond =
             Time.toSecond model.zone model.time
 
         day =
@@ -120,7 +130,24 @@ view model =
         timeZone =
             7
 
-        -- Create time info for prayer calculation
+        -- Calculate prayer times first (needed for test mode)
+        basePrayerTimesList =
+            calculatePrayTimes latitude longitude elevation timeZone
+                { year = year, month = month, day = day, hour = baseHour, minute = baseMinute, second = baseSecond }
+                |> adjustTimes longitude timeZone
+                |> formatTimes
+                |> toTimeList
+
+        -- Override time if in test mode
+        ( hour, minute, second ) =
+            case model.testMode of
+                Just prayerName ->
+                    getTestTime basePrayerTimesList prayerName model.testOffset
+
+                Nothing ->
+                    ( baseHour, baseMinute, baseSecond )
+
+        -- Create time info for display
         timeInfo =
             { year = year
             , month = month
@@ -131,10 +158,7 @@ view model =
             }
 
         prayerTimesList =
-            calculatePrayTimes latitude longitude elevation timeZone timeInfo
-                |> adjustTimes longitude timeZone
-                |> formatTimes
-                |> toTimeList
+            basePrayerTimesList
 
         htmlTimes =
             prayerTimesList
@@ -147,6 +171,24 @@ view model =
         htmlIqomah =
             htmlIqomahCountdown timeInfo prayerTimesList
 
+        testModeIndicator =
+            case model.testMode of
+                Just prayerName ->
+                    Html.div
+                        [ classList [ ( "test-mode-indicator", True ) ]
+                        , style "background-color" "#ff6b6b"
+                        , style "color" "white"
+                        , style "padding" "10px"
+                        , style "margin" "10px 0"
+                        , style "border-radius" "5px"
+                        , style "font-weight" "bold"
+                        , style "text-align" "center"
+                        ]
+                        [ Html.text ("TEST MODE: " ++ String.toUpper prayerName ++ " + " ++ String.fromInt model.testOffset ++ " min") ]
+
+                Nothing ->
+                    Html.div [] []
+
         locationButton =
             Html.button
                 [ onClick RequestLocation
@@ -155,7 +197,7 @@ view model =
                 [ Html.text "Cek Lokasi" ]
 
         htmlTimeKeeper =
-            [ htmlClock, htmlIqomah ] ++ htmlTimes ++ [ locationButton ]
+            [ htmlClock, testModeIndicator, htmlIqomah ] ++ htmlTimes ++ [ locationButton ]
     in
     Html.div [ classList [ ( "time", True ) ] ] htmlTimeKeeper
 
@@ -234,6 +276,61 @@ type alias TimeInfo =
     , minute : Int
     , second : Int
     }
+
+
+-- Test mode helper function
+getTestTime : List ( String, String ) -> String -> Int -> ( Int, Int, Int )
+getTestTime prayerTimes prayerName offsetMinutes =
+    let
+        normalizedName =
+            String.toLower prayerName
+
+        matchingPrayer =
+            prayerTimes
+                |> List.filter (\( name, _ ) -> String.toLower name == normalizedName)
+                |> List.head
+
+        defaultTime =
+            ( 12, 0, 30 )
+    in
+    case matchingPrayer of
+        Just ( _, timeStr ) ->
+            let
+                parts =
+                    String.split ":" timeStr
+
+                hours =
+                    parts
+                        |> List.head
+                        |> Maybe.withDefault "0"
+                        |> String.toInt
+                        |> Maybe.withDefault 0
+
+                minutes =
+                    parts
+                        |> List.drop 1
+                        |> List.head
+                        |> Maybe.withDefault "0"
+                        |> String.toInt
+                        |> Maybe.withDefault 0
+
+                -- Add offset minutes
+                totalMinutes =
+                    (hours * 60) + minutes + offsetMinutes
+
+                newHour =
+                    modBy 24 (totalMinutes // 60)
+
+                newMinute =
+                    modBy 60 totalMinutes
+
+                newSecond =
+                    30
+            in
+            ( newHour, newMinute, newSecond )
+
+        Nothing ->
+            defaultTime
 
 
 timeStringToSeconds : String -> Int

@@ -157,7 +157,21 @@ function waitUntilInstalled(registration) {
 
 function loadApplication() {
   var node = document.getElementById('main');
-  var app = Elm.Main.init({ node: node });
+
+  // Parse URL parameters for test mode
+  var urlParams = new URLSearchParams(window.location.search);
+  var testIqomah = urlParams.get('testIqomah');
+  var testOffset = parseInt(urlParams.get('offset')) || 1; // Default 1 minute after
+
+  var flags = {
+    testIqomah: testIqomah,
+    testOffset: testOffset
+  };
+
+  var app = Elm.Main.init({
+    node: node,
+    flags: flags
+  });
 
   // Handle geolocation request from Elm
   app.ports.requestLocation.subscribe(function() {

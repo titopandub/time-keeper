@@ -12,7 +12,7 @@
 */
 
 importScripts('./serviceworker-cache-polyfill.js');
-var CACHE_VERSION = 22;
+var CACHE_VERSION = 23;
 var CURRENT_CACHES = {
   prefetch: 'prefetch-cache-v' + CACHE_VERSION
 };
