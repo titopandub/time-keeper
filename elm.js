@@ -5247,6 +5247,10 @@ var $author$project$Main$init = function (_v0) {
 					A2($elm$core$Task$perform, $author$project$Main$AdjustTimeZone, $elm$time$Time$here)
 				])));
 };
+var $author$project$Main$ReceiveLocation = function (a) {
+	return {$: 'ReceiveLocation', a: a};
+};
+var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$time$Time$Every = F2(
 	function (a, b) {
 		return {$: 'Every', a: a, b: b};
@@ -5646,28 +5650,69 @@ var $elm$time$Time$every = F2(
 		return $elm$time$Time$subscription(
 			A2($elm$time$Time$Every, interval, tagger));
 	});
+var $elm$json$Json$Decode$andThen = _Json_andThen;
+var $elm$json$Json$Decode$field = _Json_decodeField;
+var $elm$json$Json$Decode$float = _Json_decodeFloat;
+var $author$project$Main$receiveLocation = _Platform_incomingPort(
+	'receiveLocation',
+	A2(
+		$elm$json$Json$Decode$andThen,
+		function (longitude) {
+			return A2(
+				$elm$json$Json$Decode$andThen,
+				function (latitude) {
+					return $elm$json$Json$Decode$succeed(
+						{latitude: latitude, longitude: longitude});
+				},
+				A2($elm$json$Json$Decode$field, 'latitude', $elm$json$Json$Decode$float));
+		},
+		A2($elm$json$Json$Decode$field, 'longitude', $elm$json$Json$Decode$float)));
 var $author$project$Main$subscriptions = function (model) {
-	return A2($elm$time$Time$every, 1000, $author$project$Main$Tick);
+	return $elm$core$Platform$Sub$batch(
+		_List_fromArray(
+			[
+				A2($elm$time$Time$every, 1000, $author$project$Main$Tick),
+				$author$project$Main$receiveLocation($author$project$Main$ReceiveLocation)
+			]));
 };
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $elm$json$Json$Encode$null = _Json_encodeNull;
+var $author$project$Main$requestLocation = _Platform_outgoingPort(
+	'requestLocation',
+	function ($) {
+		return $elm$json$Json$Encode$null;
+	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
-		if (msg.$ === 'Tick') {
-			var newTime = msg.a;
-			return _Utils_Tuple2(
-				_Utils_update(
+		switch (msg.$) {
+			case 'Tick':
+				var newTime = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{time: newTime}),
+					$elm$core$Platform$Cmd$none);
+			case 'AdjustTimeZone':
+				var newZone = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{zone: newZone}),
+					$elm$core$Platform$Cmd$none);
+			case 'RequestLocation':
+				return _Utils_Tuple2(
 					model,
-					{time: newTime}),
-				$elm$core$Platform$Cmd$none);
-		} else {
-			var newZone = msg.a;
-			return _Utils_Tuple2(
-				_Utils_update(
-					model,
-					{zone: newZone}),
-				$elm$core$Platform$Cmd$none);
+					$author$project$Main$requestLocation(_Utils_Tuple0));
+			default:
+				var newLocation = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{location: newLocation}),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
+var $author$project$Main$RequestLocation = {$: 'RequestLocation'};
 var $author$project$PrayTime$adjustTimes = F3(
 	function (longitude, timeZone, _v0) {
 		var fajr = _v0.fajr;
@@ -5684,6 +5729,7 @@ var $author$project$PrayTime$adjustTimes = F3(
 		var asrTime = ((asr + timeZone) - (longitude / 15)) + (2 / 60);
 		return {asr: asrTime, dhuhr: dhuhrTime, fajr: fajrTime, isya: isyaTime, magrib: magribTime, sunRise: sunRiseTime};
 	});
+var $elm$html$Html$button = _VirtualDom_node('button');
 var $author$project$PrayTime$CCW = {$: 'CCW'};
 var $author$project$PrayTime$None = {$: 'None'};
 var $elm$core$Basics$abs = function (n) {
@@ -6109,6 +6155,23 @@ var $author$project$Main$monthToNumber = function (month) {
 			return 12;
 	}
 };
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
 var $elm$time$Time$flooredDiv = F2(
 	function (numerator, denominator) {
 		return $elm$core$Basics$floor(numerator / denominator);
@@ -6290,6 +6353,21 @@ var $author$project$Main$view = function (model) {
 		A2($elm$time$Time$toMonth, model.zone, model.time));
 	var minute = A2($elm$time$Time$toMinute, model.zone, model.time);
 	var longitude = model.location.longitude;
+	var locationButton = A2(
+		$elm$html$Html$button,
+		_List_fromArray(
+			[
+				$elm$html$Html$Events$onClick($author$project$Main$RequestLocation),
+				$elm$html$Html$Attributes$classList(
+				_List_fromArray(
+					[
+						_Utils_Tuple2('time__location-button', true)
+					]))
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text('Cek Lokasi')
+			]));
 	var latitude = model.location.latitude;
 	var hour = A2($elm$time$Time$toHour, model.zone, model.time);
 	var htmlClock = $author$project$Main$toHtmlClock(
@@ -6309,7 +6387,10 @@ var $author$project$Main$view = function (model) {
 	var htmlTimeKeeper = _Utils_ap(
 		_List_fromArray(
 			[htmlClock, htmlIqomah]),
-		htmlTimes);
+		_Utils_ap(
+			htmlTimes,
+			_List_fromArray(
+				[locationButton])));
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(

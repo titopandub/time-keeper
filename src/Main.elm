@@ -1,4 +1,4 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Browser
 import Html exposing (Html)
@@ -7,6 +7,13 @@ import Html.Events exposing (onClick)
 import Time exposing (Posix)
 import Task
 import PrayTime exposing (..)
+
+
+-- Ports for geolocation
+port requestLocation : () -> Cmd msg
+
+
+port receiveLocation : (LatLong -> msg) -> Sub msg
 
 
 main : Program () Model Msg
@@ -51,6 +58,8 @@ init _ =
 type Msg
     = Tick Posix
     | AdjustTimeZone Time.Zone
+    | RequestLocation
+    | ReceiveLocation LatLong
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -62,10 +71,19 @@ update msg model =
         AdjustTimeZone newZone ->
             ( { model | zone = newZone }, Cmd.none )
 
+        RequestLocation ->
+            ( model, requestLocation () )
+
+        ReceiveLocation newLocation ->
+            ( { model | location = newLocation }, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Time.every 1000 Tick
+    Sub.batch
+        [ Time.every 1000 Tick
+        , receiveLocation ReceiveLocation
+        ]
 
 
 view : Model -> Html Msg
@@ -129,8 +147,15 @@ view model =
         htmlIqomah =
             htmlIqomahCountdown timeInfo prayerTimesList
 
+        locationButton =
+            Html.button
+                [ onClick RequestLocation
+                , classList [ ( "time__location-button", True ) ]
+                ]
+                [ Html.text "Cek Lokasi" ]
+
         htmlTimeKeeper =
-            [ htmlClock, htmlIqomah ] ++ htmlTimes
+            [ htmlClock, htmlIqomah ] ++ htmlTimes ++ [ locationButton ]
     in
     Html.div [ classList [ ( "time", True ) ] ] htmlTimeKeeper
 

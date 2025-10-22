@@ -158,6 +158,27 @@ function waitUntilInstalled(registration) {
 function loadApplication() {
   var node = document.getElementById('main');
   var app = Elm.Main.init({ node: node });
+
+  // Handle geolocation request from Elm
+  app.ports.requestLocation.subscribe(function() {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        function(position) {
+          // Send location back to Elm
+          app.ports.receiveLocation.send({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          });
+        },
+        function(error) {
+          console.error('Geolocation error:', error);
+          // Keep using default location on error
+        }
+      );
+    } else {
+      console.error('Geolocation is not supported');
+    }
+  });
 }
 
 if ('serviceWorker' in navigator) {
