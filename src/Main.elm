@@ -93,12 +93,15 @@ view model =
         timeZone =
             toFloat 7
 
-        htmlTimes =
+        prayerTimesList =
             date
                 |> calculatePrayTimes latitude longitude elevation timeZone
                 |> adjustTimes longitude timeZone
                 |> formatTimes
                 |> toTimeList
+
+        htmlTimes =
+            prayerTimesList
                 |> List.map htmlTimeStructure
 
         htmlClock =
@@ -106,8 +109,11 @@ view model =
                 |> formattedDate
                 |> toHtmlClock
 
+        htmlIqomah =
+            htmlIqomahCountdown date prayerTimesList
+
         htmlTimeKeeper =
-            ([ htmlClock ]) ++ (htmlTimes) ++ buttonGeolocation
+            ([ htmlClock, htmlIqomah ]) ++ (htmlTimes) ++ buttonGeolocation
     in
         Html.div [ classList [ ( "time", True ) ] ] htmlTimeKeeper
 
@@ -159,3 +165,107 @@ buttonGeolocation =
         , classList [ ("time__location-button", True) ]
         ]
         [ Html.text "Cek Lokasi" ] ]
+
+
+-- Iqomah countdown functions
+timeStringToSeconds : String -> Int
+timeStringToSeconds timeStr =
+    let
+        parts =
+            String.split ":" timeStr
+
+        hours =
+            parts
+                |> List.head
+                |> Maybe.withDefault "0"
+                |> String.toInt
+                |> Result.withDefault 0
+
+        minutes =
+            parts
+                |> List.drop 1
+                |> List.head
+                |> Maybe.withDefault "0"
+                |> String.toInt
+                |> Result.withDefault 0
+    in
+        (hours * 3600) + (minutes * 60)
+
+
+dateToSeconds : Date -> Int
+dateToSeconds date =
+    let
+        hours =
+            Date.hour date
+
+        minutes =
+            Date.minute date
+
+        seconds =
+            Date.second date
+    in
+        (hours * 3600) + (minutes * 60) + seconds
+
+
+findIqomahStatus : Date -> List ( String, String ) -> Maybe ( String, Int )
+findIqomahStatus date prayerTimes =
+    let
+        currentSeconds =
+            dateToSeconds date
+
+        iqomahDuration =
+            5 * 60  -- 5 minutes in seconds
+
+        checkPrayer ( name, timeStr ) =
+            if name == "Terbit" then
+                Nothing
+            else
+                let
+                    prayerSeconds =
+                        timeStringToSeconds timeStr
+
+                    secondsSincePrayer =
+                        currentSeconds - prayerSeconds
+
+                    remainingSeconds =
+                        iqomahDuration - secondsSincePrayer
+                in
+                    if secondsSincePrayer >= 0 && secondsSincePrayer < iqomahDuration then
+                        Just ( name, remainingSeconds )
+                    else
+                        Nothing
+
+        results =
+            List.filterMap checkPrayer prayerTimes
+    in
+        List.head results
+
+
+formatIqomahTime : Int -> String
+formatIqomahTime seconds =
+    let
+        mins =
+            seconds // 60
+
+        secs =
+            modBy 60 seconds
+    in
+        (toString mins) ++ " min " ++ (toString secs) ++ " sec"
+
+
+htmlIqomahCountdown : Date -> List ( String, String ) -> Html msg
+htmlIqomahCountdown date prayerTimes =
+    case findIqomahStatus date prayerTimes of
+        Just ( prayerName, remainingSeconds ) ->
+            Html.div
+                [ classList [ ( "time__iqomah", True ) ] ]
+                [ Html.div
+                    [ classList [ ( "time__iqomah-label", True ) ] ]
+                    [ Html.text ("Iqomah " ++ prayerName) ]
+                , Html.div
+                    [ classList [ ( "time__iqomah-countdown", True ) ] ]
+                    [ Html.text (formatIqomahTime remainingSeconds) ]
+                ]
+
+        Nothing ->
+            Html.div [] []
